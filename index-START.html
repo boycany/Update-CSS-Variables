@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scoped CSS Variables and JS</title>
+</head>
+<body>
+  <h2>Play with <span class='hl'>MY PHOTO</span></h2>
+
+  <div class="controls">
+    <label for="spacing">Spacing:</label>
+    <input id="spacing" type="range" name="spacing" min="8" max="198" value="8" data-sizing="px">
+
+    <label for="blur">Blur:</label>
+    <input id="blur" type="range" name="blur" min="0" max="25" value="2" data-sizing="px">
+
+    <label for="base">Base Color</label>
+    <input id="base" type="color" name="base" value="#ffc600">
+    <button id="random" name="random">Random</button>
+  </div>
+
+  <img src="./pic.JPG">
+
+  <style>
+    
+    :root{   /*指向文件的根，通常等同於<html>，可用document.querySelector選取就知 */
+      --base: #ffc600;
+      --blur: 2px;
+      --spacing: 8px;
+    }
+
+    img {
+      background: var(--base);
+      filter: blur(var(--blur));
+      padding: var(--spacing);
+    }
+
+    h2 {
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+
+    .hl {
+      color: var(--base);
+    }
+    /*
+      misc styles, nothing to do with CSS variables
+    */
+
+    body {
+      text-align: center;
+      background: #193549;
+      color: white;
+      font-family: 'helvetica neue', sans-serif;
+      font-weight: 100;
+      font-size: 25px;
+    }
+
+    .controls {
+      margin-bottom: 22px;
+      /* background-color: red; */
+    }
+
+    input {
+      width: 100px;
+      
+    }
+
+    #random {
+      border-radius: 10%;
+      width: 70px;
+      height: 25px;
+      margin-left: 10px;
+      font-family: 'helvetica neue', sans-serif;
+      /* border: 3px solid; */
+      /* border-color: var(--base); */
+      cursor: pointer;
+      
+    }
+  </style>
+
+  <script>
+    const inputs = document.querySelectorAll('.controls input')
+
+    const button = document.querySelector('#random')
+
+    function handleUpdate(){
+      
+      // console.log(e.target.value)也行
+      // console.log(this)
+      // console.log(this.value)
+
+      const suffix = this.dataset.sizing || '' 
+      //suffix (接尾詞) 
+      //dataset 存取 data-xxxxx 這種自定義屬性
+      //然後因為有時候使用者是按base區塊，所以有可能dataset存取不到東西
+
+      // console.log(suffix)
+
+      document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix)
+      // document.querySelector(':root').style.setProperty(`--${this.name}`, this.value + suffix)
+      // 或者 document.querySelector('html') 也是一樣意思
+    }
+
+    function handleRandom(){
+      const randomSpacingValue = Math.floor(Math.random() * 190 + 8) 
+      const randomBlurValue = Math.floor(Math.random() * 25) 
+
+      console.log('Spacing:', randomSpacingValue, 'Blur:', randomBlurValue)
+
+      const letters = '0123456789ABCDEF'.split('')
+      let hexColor = '#'
+
+      for(let i=0;i <6;i++){
+        hexColor += letters[Math.floor(Math.random()*16)]
+      }
+      console.log(hexColor)
+
+      document.documentElement.style.setProperty('--base', hexColor)
+      document.documentElement.style.setProperty('--blur', randomBlurValue + 'px')
+      document.documentElement.style.setProperty('--spacing', randomSpacingValue+'px')
+
+      const spacing = document.querySelector('#spacing')
+      const blur = document.querySelector('#blur')
+      const base = document.querySelector('#base')
+
+      spacing.value = randomSpacingValue
+      blur.value = randomBlurValue
+      base.value = hexColor
+    }
+
+    // inputs.forEach(input => {
+    //   // console.log(input)
+    //   input.addEventListener('change', handleUpdate)
+    // })
+  
+    // EventListener 用 change 的話，會等滑鼠放開之後才做變化。
+
+    inputs.forEach(input => {
+        // console.log(input.type)
+
+        if(input.type === 'range'){
+        // console.log(input)
+            input.addEventListener('mousemove', handleUpdate)
+            //mousemove事件會即時變化，在handleUpdate裡加console.log就可知道
+        } else if(input.type === 'color') {
+            input.addEventListener('input', handleUpdate)
+            //改成聆聽input事件，才會即時變化顏色
+        }
+      })
+      
+      button.addEventListener('click', handleRandom)
+  </script>
+
+</body>
+</html>
